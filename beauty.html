@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>美妆收纳 - 三福生活</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .game-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url("images/youxibeijing2.png") center/cover no-repeat;
+            z-index: -1;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .level-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .level-title .badge {
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            color: #d63384;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 16px;
+        }
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #fff0f6;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #d63384;
+            font-weight: 600;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 24px 32px;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            overflow-y: auto;
+        }
+
+        .categories-section {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 24px;
+            margin-bottom: 10px;
+        }
+
+        .category-box {
+            background: rgba(255,255,255,0.9);
+            border-radius: 24px;
+            padding: 24px 18px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+            border: 4px dashed #e0e0e0;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 270px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .category-box.drag-over {
+            border-color: #ff6b9d;
+            background: rgba(255,237,243,0.95);
+            transform: scale(1);
+            box-shadow: 0 12px 30px rgba(255,107,157,0.25);
+        }
+
+        .category-box.correct {
+            border-color: #52c41a;
+            background: rgba(246,255,237,0.95);
+            animation: pop 0.4s ease;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        .category-box.wrong {
+            border-color: #ff4d4f;
+            background: rgba(255,242,240,0.95);
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .category-header {
+            text-align: center;
+            margin-bottom: 18px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .category-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #444;
+        }
+
+        .category-count {
+            font-size: 16px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .category-items {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-content: flex-start;
+        }
+
+        .stars {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+            padding: 9px 18px;
+            border-radius: 28px;
+            font-size: 20px;
+            box-shadow: 0 6px 18px rgba(255,165,0,0.4);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.4s ease;
+            z-index: 10;
+        }
+
+        .stars.show {
+            opacity: 1;
+            transform: scale(1);
+            animation: starBounce 0.6s ease;
+        }
+
+        @keyframes starBounce {
+            0% { transform: scale(0) rotate(-180deg); }
+            50% { transform: scale(1.3) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        .items-pool {
+            background: rgba(255,255,255,0.92);
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+            padding: 30px;
+        }
+
+        .pool-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 24px;
+        }
+
+        .pool-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            min-height: 160px;
+        }
+
+        .cosmetic-item {
+            width: 108px;
+            height: 108px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+            cursor: grab;
+            transition: all 0.25s ease;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .cosmetic-item:hover {
+            transform: translateY(-4px) scale(1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .cosmetic-item:active {
+            cursor: grabbing;
+            transform: scale(1);
+        }
+
+        .cosmetic-item.placed {
+            cursor: default;
+            animation: placeIn 0.3s ease;
+        }
+
+        @keyframes placeIn {
+            0% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .cosmetic-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            background: transparent;
+        }
+
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 16px 32px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+        }
+
+        .action-btn {
+            padding: 14px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+
+        .action-btn.submit {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            color: #d63384;
+        }
+
+        .action-btn.submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(214,51,132,0.3);
+        }
+
+        .action-btn.submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn.back {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .action-btn.back:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            padding: 20px 40px;
+            background: rgba(255,77,79,0.95);
+            color: #fff;
+            border-radius: 16px;
+            font-size: 24px;
+            font-weight: 700;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(255,77,79,0.5);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .win-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .win-modal.show { display: flex; }
+
+        .win-card {
+            background: linear-gradient(135deg, #fff9f0 0%, #ffe4ec 100%);
+            border-radius: 32px;
+            padding: 48px;
+            max-width: 520px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            animation: winCardIn 0.5s ease;
+        }
+
+        @keyframes winCardIn {
+            0% { transform: scale(0.7) rotate(-5deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .win-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #d63384;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .win-subtitle {
+            font-size: 15px;
+            color: #888;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .win-stars {
+            font-size: 56px;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+            animation: starsTwinkle 1.5s ease-in-out infinite;
+        }
+
+        @keyframes starsTwinkle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .win-actions {
+            display: flex;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .win-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .win-btn.again {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            color: #d63384;
+            box-shadow: 0 4px 14px rgba(214,51,132,0.3);
+        }
+
+        .win-btn.again:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(214,51,132,0.4);
+        }
+
+        .win-btn.home {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .win-btn.home:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        /* 拖拽幽灵元素 */
+        .drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            width: 120px; height: 120px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+            z-index: 9999;
+            transform: translate(-50%, -50%) rotate(-8deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .drag-ghost img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+        }
+
+        @media (max-width: 1200px) {
+            .categories-section { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .categories-section { grid-template-columns: repeat(2, 1fr); }
+            .game-area { padding: 16px; }
+            .cosmetic-item { width: 90px; height: 90px; }
+        }
+
+        /* 音频控制面板 */
+        .audio-control-panel {
+            position: fixed;
+            top: 80px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 16px;
+            border-radius: 32px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 107, 157, 0.2);
+        }
+        .audio-control-panel:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.2);
+            transform: translateY(-2px);
+        }
+        .audio-toggle-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+        }
+        .audio-toggle-btn:hover { transform: scale(1); box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4); }
+        .audio-toggle-btn:active { transform: scale(1); }
+        .audio-toggle-btn.playing { background: linear-gradient(135deg, #ff6b9d, #ff8fab); animation: audioPulse 2s ease-in-out infinite; }
+        .audio-toggle-btn.paused { background: linear-gradient(135deg, #9ca3af, #a78bfa); }
+        @keyframes audioPulse {
+            0%, 100% { box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3); }
+            50% { box-shadow: 0 4px 16px rgba(255, 107, 157, 0.5); }
+        }
+        .volume-slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .audio-control-panel:hover .volume-slider-wrapper,
+        .audio-control-panel.active .volume-slider-wrapper {
+            opacity: 1;
+            width: 120px;
+        }
+        .volume-icon { font-size: 16px; color: #ff6b9d; flex-shrink: 0; }
+        .volume-slider {
+            width: 100px;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, #ff6b9d 0%, #ff6b9d var(--volume-percent, 70%), #e5e7eb var(--volume-percent, 70%), #e5e7eb 100%);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #ff6b9d;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        .volume-slider::-webkit-slider-thumb:hover { transform: scale(1); }
+        .volume-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #ff6b9d;
+            cursor: pointer;
+        }
+        .volume-label { font-size: 12px; color: #ff6b9d; font-weight: 600; min-width: 32px; }
+        @media (max-width: 600px) {
+            .audio-control-panel { top: 70px; right: 10px; padding: 8px 12px; gap: 8px; }
+            .audio-toggle-btn { width: 32px; height: 32px; font-size: 16px; }
+            .audio-control-panel:hover .volume-slider-wrapper,
+            .audio-control-panel.active .volume-slider-wrapper { width: 80px; }
+            .volume-slider { width: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景音频 -->
+    <audio id="bgmAudio" loop preload="auto">
+        <source src="audio/yinpin.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 音频控制面板 -->
+    <div class="audio-control-panel" id="audioControlPanel">
+        <button class="audio-toggle-btn playing" id="audioToggleBtn" title="点击暂停/播放">
+            <span id="audioIcon">🔊</span>
+        </button>
+        <div class="volume-slider-wrapper">
+            <span class="volume-icon">🎵</span>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+            <span class="volume-label" id="volumeLabel">70%</span>
+        </div>
+    </div>
+
+    <div class="game-bg"></div>
+
+    <div class="top-bar">
+        <div class="level-title">
+            <span class="badge">第一关</span>
+            <span>美妆整理小站</span>
+        </div>
+        <div class="progress">
+            <span id="progressText">已收纳 0 / 29</span>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <div class="categories-section" id="categoriesSection">
+            <!-- 分类收纳区由 JS 生成 -->
+        </div>
+
+        <div class="items-pool">
+            <div class="pool-title">✨ 待收纳化妆品 ✨</div>
+            <div class="pool-items" id="poolItems"></div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <button class="action-btn back" onclick="goHome()">返回主页</button>
+        <button class="action-btn submit" id="submitBtn" disabled>提交整理</button>
+    </div>
+
+    <div class="toast" id="toast">❌ 放错位置了！</div>
+
+    <div class="win-modal" id="winModal">
+        <div class="win-card">
+            <div class="win-title">🎉 收纳完成！</div>
+            <div class="win-subtitle">恭喜你完成美妆分类整理！</div>
+            <div class="win-stars">⭐⭐⭐</div>
+            <div class="win-actions">
+                <button class="win-btn home" onclick="goHome()">返回主页</button>
+                <button class="win-btn again" onclick="location.reload()">再玩一次</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE = "images/";
+        const BGM_URL = "audio/yinpin.mp3";
+        const AUDIO_STORAGE_KEY = 'sanfu_game_volume';
+        const audioState = {
+            isPlaying: false,
+            volume: 50,
+            currentTime: 0,
+            initialized: false
+        };
+        function updateVolumeSliderBackground(slider, value) {
+            slider.style.setProperty('--volume-percent', value + '%');
+        }
+        function saveAudioState() {
+            try {
+                const bgmAudio = document.getElementById('bgmAudio');
+                if (bgmAudio && bgmAudio.currentTime > 0) {
+                    audioState.currentTime = bgmAudio.currentTime;
+                }
+                // 保存到统一的localStorage键名
+                localStorage.setItem(AUDIO_STORAGE_KEY, audioState.volume);
+            } catch (e) { console.log('无法保存音频状态:', e); }
+        }
+        function loadAudioState() {
+            try {
+                const volume = localStorage.getItem(AUDIO_STORAGE_KEY);
+                if (volume !== null) {
+                    return {
+                        isPlaying: audioState.isPlaying,
+                        volume: parseInt(volume),
+                        currentTime: audioState.currentTime
+                    };
+                }
+            } catch (e) { console.log('无法读取音频状态:', e); }
+            return { isPlaying: true, volume: 50, currentTime: 0 };
+        }
+        function initAudioControl() {
+            const bgmAudio = document.getElementById('bgmAudio');
+            const toggleBtn = document.getElementById('audioToggleBtn');
+            const audioIcon = document.getElementById('audioIcon');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeLabel = document.getElementById('volumeLabel');
+            if (!bgmAudio) return;
+            bgmAudio.src = BGM_URL;
+            bgmAudio.loop = true;
+            const saved = loadAudioState();
+            if (saved.volume !== null && saved.volume !== undefined) audioState.volume = saved.volume;
+            if (saved.isPlaying !== null && saved.isPlaying !== undefined) audioState.isPlaying = saved.isPlaying;
+            if (saved.currentTime !== null && saved.currentTime !== undefined && !isNaN(saved.currentTime)) audioState.currentTime = saved.currentTime;
+            bgmAudio.volume = audioState.volume / 100;
+            volumeSlider.value = audioState.volume;
+            volumeLabel.textContent = audioState.volume + '%';
+            updateVolumeSliderBackground(volumeSlider, audioState.volume);
+            if (audioState.isPlaying) {
+                toggleBtn.classList.add('playing');
+                toggleBtn.classList.remove('paused');
+                audioIcon.textContent = '🔊';
+            } else {
+                toggleBtn.classList.add('paused');
+                toggleBtn.classList.remove('playing');
+                audioIcon.textContent = '🔇';
+            }
+            toggleBtn.addEventListener('click', function() {
+                if (bgmAudio.paused) {
+                    bgmAudio.play().then(() => {
+                        audioState.isPlaying = true;
+                        toggleBtn.classList.add('playing');
+                        toggleBtn.classList.remove('paused');
+                        audioIcon.textContent = '🔊';
+                        saveAudioState();
+                    }).catch(function(err) { console.log('音频播放失败:', err); });
+                } else {
+                    bgmAudio.pause();
+                    audioState.isPlaying = false;
+                    toggleBtn.classList.add('paused');
+                    toggleBtn.classList.remove('playing');
+                    audioIcon.textContent = '🔇';
+                    saveAudioState();
+                }
+            });
+            volumeSlider.addEventListener('input', function(e) {
+                const v = parseInt(e.target.value, 10);
+                audioState.volume = v;
+                bgmAudio.volume = v / 100;
+                volumeLabel.textContent = v + '%';
+                updateVolumeSliderBackground(volumeSlider, v);
+                saveAudioState();
+            });
+            bgmAudio.addEventListener('timeupdate', function() {
+                if (!bgmAudio.paused && bgmAudio.currentTime > 0) {
+                    audioState.currentTime = bgmAudio.currentTime;
+                }
+            });
+            bgmAudio.addEventListener('ended', function() {
+                bgmAudio.currentTime = 0;
+                audioState.currentTime = 0;
+                if (audioState.isPlaying) { bgmAudio.play().catch(() => {}); }
+                saveAudioState();
+            });
+            bgmAudio.addEventListener('error', function(e) {
+                console.log('音频加载失败:', e);
+                audioState.isPlaying = false;
+                toggleBtn.classList.add('paused');
+                toggleBtn.classList.remove('playing');
+                audioIcon.textContent = '🔇';
+            });
+            function tryAutoPlay() {
+                if (audioState.initialized) return;
+                
+                // 设置固定音量（不影响其他音效）
+                const fixedVolume = 0.5; // 固定50%音量
+                audioState.volume = Math.round(fixedVolume * 100);
+                bgmAudio.volume = fixedVolume;
+                volumeSlider.value = audioState.volume;
+                volumeLabel.textContent = audioState.volume + '%';
+                updateVolumeSliderBackground(volumeSlider, audioState.volume);
+                
+                // 恢复之前的播放位置（无缝续播）
+                if (audioState.currentTime > 0 && !isNaN(audioState.currentTime)) {
+                    try { bgmAudio.currentTime = audioState.currentTime; } catch (e) {}
+                }
+                
+                // 游戏页面自动播放背景音乐
+                const playPromise = bgmAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        audioState.isPlaying = true;
+                        audioState.initialized = true;
+                        toggleBtn.classList.add('playing');
+                        toggleBtn.classList.remove('paused');
+                        audioIcon.textContent = '🔊';
+                        saveAudioState();
+                    }).catch(() => {
+                        const onFirstInteraction = function() {
+                            if (audioState.currentTime > 0 && !isNaN(audioState.currentTime)) {
+                                try { bgmAudio.currentTime = audioState.currentTime; } catch (e) {}
+                            }
+                            bgmAudio.play().then(() => {
+                                audioState.isPlaying = true;
+                                audioState.initialized = true;
+                                toggleBtn.classList.add('playing');
+                                toggleBtn.classList.remove('paused');
+                                audioIcon.textContent = '🔊';
+                                saveAudioState();
+                            }).catch(() => {});
+                            document.removeEventListener('click', onFirstInteraction);
+                            document.removeEventListener('touchstart', onFirstInteraction);
+                            document.removeEventListener('keydown', onFirstInteraction);
+                        };
+                        document.addEventListener('click', onFirstInteraction);
+                        document.addEventListener('touchstart', onFirstInteraction);
+                        document.addEventListener('keydown', onFirstInteraction);
+                    });
+                }
+                audioState.initialized = true;
+            }
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                setTimeout(tryAutoPlay, 100);
+            } else {
+                document.addEventListener('DOMContentLoaded', function() { setTimeout(tryAutoPlay, 100); });
+            }
+            window.addEventListener('load', function() { if (!audioState.initialized) tryAutoPlay(); });
+            window.addEventListener('beforeunload', function() {
+                if (bgmAudio && bgmAudio.currentTime > 0) {
+                    audioState.currentTime = bgmAudio.currentTime;
+                }
+                saveAudioState();
+            });
+            
+            // 监听其他页面修改音量
+            window.addEventListener('storage', function(e) {
+                if (e.key === AUDIO_STORAGE_KEY && e.newValue) {
+                    const newVolume = parseInt(e.newValue);
+                    if (!isNaN(newVolume)) {
+                        audioState.volume = newVolume;
+                        bgmAudio.volume = newVolume / 100;
+                        volumeSlider.value = newVolume;
+                        volumeLabel.textContent = newVolume + '%';
+                        updateVolumeSliderBackground(volumeSlider, newVolume);
+                    }
+                }
+            });
+        }
+        initAudioControl();
+
+        // 美妆素材分类数据
+        const CATEGORIES = {
+            lipstick: {
+                name: "口红唇釉",
+                items: [
+                    { id: "lip1", file: "kouhong1.png", type: "png" },
+                    { id: "lip2", file: "kouhong2.png", type: "png" },
+                    { id: "lip3", file: "kouhong3.png", type: "png" },
+                    { id: "lip4", file: "chunyou1.png", type: "png" },
+                    { id: "lip5", file: "chunyou2.png", type: "png" },
+                ]
+            },
+            base: {
+                name: "底妆类",
+                items: [
+                    { id: "b1", file: "fendiye1.png", type: "png" },
+                    { id: "b2", file: "fenbing1.png", type: "png" },
+                    { id: "b3", file: "fenbing2.png", type: "png" },
+                    { id: "b4", file: "xiurongpan1.jpg", type: "jpg" },
+                    { id: "b5", file: "xiurongpan2.png", type: "png" },
+                    { id: "b6", file: "xiurongpan3.png", type: "png" },
+                ]
+            },
+            eye: {
+                name: "眼妆类",
+                items: [
+                    { id: "e1", file: "yanyingpan1.png", type: "png" },
+                    { id: "e2", file: "yanyingpan2.png", type: "png" },
+                    { id: "e3", file: "yanxianbi2.png", type: "png" },
+                    { id: "e4", file: "meibi1.png", type: "png" },
+                    { id: "e5", file: "meibi2.png", type: "png" },
+                ]
+            },
+            skin: {
+                name: "护肤类",
+                items: [
+                    { id: "s1", file: "zhuangqianmianshuang1.png", type: "png" },
+                    { id: "s2", file: "zhuangqianru1.jpg", type: "jpg" },
+                ]
+            },
+            suncare: {
+                name: "防晒",
+                items: [
+                    { id: "u1", file: "fangshaishuang1.png", type: "png" },
+                    { id: "u2", file: "fangshaishuang2.png", type: "png" },
+                    { id: "u3", file: "fangshaishuang3.png", type: "png" },
+                    { id: "u4", file: "fangshaishuang4.png", type: "png" },
+                ]
+            }
+        };
+
+        // 状态管理
+        let totalItems = 0;
+        let placedItems = 0;
+        const placedCount = {};
+        const totalCount = {};
+
+        // 初始化
+        Object.keys(CATEGORIES).forEach(cat => {
+            totalCount[cat] = CATEGORIES[cat].items.length;
+            placedCount[cat] = 0;
+            totalItems += totalCount[cat];
+        });
+
+        const categoriesSection = document.getElementById("categoriesSection");
+        const poolItems = document.getElementById("poolItems");
+        const toast = document.getElementById("toast");
+        const winModal = document.getElementById("winModal");
+        const submitBtn = document.getElementById("submitBtn");
+        const progressText = document.getElementById("progressText");
+
+        // 创建分类收纳区
+        function createCategories() {
+            Object.keys(CATEGORIES).forEach(cat => {
+                const info = CATEGORIES[cat];
+                const box = document.createElement("div");
+                box.className = "category-box";
+                box.dataset.category = cat;
+                box.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-title">${info.name}</div>
+                        <div class="category-count">0 / ${info.items.length}</div>
+                    </div>
+                    <div class="category-items" id="cat-${cat}"></div>
+                    <div class="stars" id="stars-${cat}">⭐</div>
+                `;
+                categoriesSection.appendChild(box);
+
+                // 拖拽事件
+                box.addEventListener("pointerenter", () => {
+                    if (draggingItem) box.classList.add("drag-over");
+                });
+                box.addEventListener("pointerleave", () => {
+                    box.classList.remove("drag-over");
+                });
+            });
+        }
+
+        // 创建待收纳物品
+        function createPoolItems() {
+            const allItems = [];
+            Object.keys(CATEGORIES).forEach(cat => {
+                CATEGORIES[cat].items.forEach(item => {
+                    allItems.push({ ...item, category: cat });
+                });
+            });
+            // 随机打乱
+            allItems.sort(() => Math.random() - 0.5);
+
+            allItems.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "cosmetic-item";
+                div.dataset.category = item.category;
+                div.dataset.file = item.file;
+                div.dataset.id = item.id;
+
+                const img = document.createElement("img");
+                img.src = BASE + item.file;
+                img.alt = "";
+                div.appendChild(img);
+
+                poolItems.appendChild(div);
+                div.addEventListener("pointerdown", startDrag);
+            });
+        }
+
+        // 根据文件名关键词判断实际分类（用于校验）
+        function getCategoryFromFile(fileName) {
+            if (!fileName) return null;
+            const file = fileName.toLowerCase();
+            // 口红/唇釉类
+            if (file.includes("kouhong") || file.includes("chunyou") ||
+                file.includes("口红") || file.includes("唇釉") || file.includes("唇油")) {
+                return "lipstick";
+            }
+            // 底妆类
+            if (file.includes("fendiye") || file.includes("fenbing") ||
+                file.includes("xiurongpan") || file.includes("粉底液") ||
+                file.includes("粉饼") || file.includes("修容盘")) {
+                return "base";
+            }
+            // 眼妆类
+            if (file.includes("yanyingpan") || file.includes("yanxianbi") ||
+                file.includes("meibi") || file.includes("眼影") ||
+                file.includes("眼线") || file.includes("眉笔")) {
+                return "eye";
+            }
+            // 护肤类
+            if (file.includes("zhuangqianmianshuang") || file.includes("zhuangqianru") ||
+                file.includes("面霜") || file.includes("妆前乳") || file.includes("护肤")) {
+                return "skin";
+            }
+            // 防晒类
+            if (file.includes("fangshaishuang") || file.includes("防晒")) {
+                return "suncare";
+            }
+            return null;
+        }
+
+        // 拖拽逻辑
+        let draggingItem = null;
+        let ghostEl = null;
+
+        function startDrag(e) {
+            e.preventDefault();
+            const target = e.currentTarget;
+            if (target.classList.contains("placed")) return;
+
+            draggingItem = target;
+            const originalParent = target.parentElement;
+
+            // 创建幽灵元素
+            ghostEl = document.createElement("div");
+            ghostEl.className = "drag-ghost";
+            const ghostImg = document.createElement("img");
+            ghostImg.src = target.querySelector("img").src;
+            ghostEl.appendChild(ghostImg);
+            ghostEl.style.left = e.clientX + "px";
+            ghostEl.style.top = e.clientY + "px";
+            document.body.appendChild(ghostEl);
+
+            target.style.opacity = "0.4";
+
+            const onMove = (ev) => {
+                if (ghostEl) {
+                    ghostEl.style.left = ev.clientX + "px";
+                    ghostEl.style.top = ev.clientY + "px";
+                }
+
+                // 更新悬停状态
+                document.querySelectorAll(".category-box").forEach(box => {
+                    const rect = box.getBoundingClientRect();
+                    if (ev.clientX >= rect.left && ev.clientX <= rect.right &&
+                        ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
+                        box.classList.add("drag-over");
+                    } else {
+                        box.classList.remove("drag-over");
+                    }
+                });
+            };
+
+            const onUp = (ev) => {
+                document.removeEventListener("pointermove", onMove);
+                document.removeEventListener("pointerup", onUp);
+
+                ghostEl?.remove();
+                ghostEl = null;
+
+                // 清除所有拖拽悬停状态
+                document.querySelectorAll(".category-box").forEach(box => {
+                    box.classList.remove("drag-over");
+                });
+
+                // 检查放下位置 - 基于文件名关键词判断实际分类
+                const targetBox = getBoxAtPoint(ev.clientX, ev.clientY);
+                const itemFile = target.dataset.file;
+                const actualCategory = getCategoryFromFile(itemFile);
+
+                if (targetBox && actualCategory && targetBox.dataset.category === actualCategory) {
+                    // 正确放置 - 基于文件名校验
+                    placeItem(target, targetBox.dataset.category);
+                } else if (targetBox) {
+                    // 放错分类 - 回弹并提示错误
+                    showError(targetBox);
+                    target.style.opacity = "";
+                } else {
+                    // 放回原位
+                    target.style.opacity = "";
+                }
+
+                draggingItem = null;
+            };
+
+            document.addEventListener("pointermove", onMove);
+            document.addEventListener("pointerup", onUp);
+        }
+
+        function getBoxAtPoint(x, y) {
+            const boxes = document.querySelectorAll(".category-box");
+            for (let i = 0; i < boxes.length; i++) {
+                const rect = boxes[i].getBoundingClientRect();
+                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                    return boxes[i];
+                }
+            }
+            return null;
+        }
+
+        function placeItem(item, category) {
+            // 严格二次校验：基于文件名关键词判断实际分类，杜绝跨品类计数
+            const itemFile = item.dataset.file;
+            const actualCategory = getCategoryFromFile(itemFile);
+            if (actualCategory !== category) {
+                showError(document.querySelector(`.category-box[data-category="${category}"]`));
+                item.style.opacity = "";
+                return;
+            }
+
+            const catBox = document.querySelector(`.category-box[data-category="${category}"]`);
+            const itemsContainer = document.getElementById(`cat-${category}`);
+
+            // 移动元素到分类区
+            itemsContainer.appendChild(item);
+            item.classList.add("placed");
+            item.style.opacity = "";
+            item.style.cursor = "default";
+
+            // 更新状态（仅统计对应品类）
+            placedCount[category]++;
+            placedItems++;
+
+            // 更新计数显示
+            const countEl = catBox.querySelector(".category-count");
+            countEl.textContent = `${placedCount[category]} / ${totalCount[category]}`;
+            countEl.style.color = "#52c41a";
+            countEl.style.fontWeight = "600";
+
+            // 视觉反馈
+            catBox.classList.add("correct");
+            setTimeout(() => catBox.classList.remove("correct"), 500);
+
+            // 更新进度
+            progressText.textContent = `已收纳 ${placedItems} / ${totalItems}`;
+
+            // 检查分类是否完成
+            if (placedCount[category] >= totalCount[category]) {
+                const stars = document.getElementById(`stars-${category}`);
+                stars.classList.add("show");
+            }
+
+            // 检查全部完成
+            if (placedItems >= totalItems) {
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showError(box) {
+            box.classList.add("wrong");
+            toast.classList.add("show");
+            setTimeout(() => {
+                box.classList.remove("wrong");
+                toast.classList.remove("show");
+            }, 800);
+        }
+
+        function goHome() {
+            saveAudioState();
+            window.location.href = "index.html";
+        }
+
+        submitBtn.addEventListener("click", () => {
+            if (placedItems >= totalItems) {
+                winModal.classList.add("show");
+            }
+        });
+
+        // 初始化
+        createCategories();
+        createPoolItems();
+        progressText.textContent = `已收纳 0 / ${totalItems}`;
+    </script>
+</body>
+</html>
